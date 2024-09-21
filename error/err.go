@@ -107,29 +107,7 @@ func NewErr[C ErrorCoder](severity SeverityLevel, code C, message string) *Err[C
 		Code:        code,
 		Message:     message,
 		Suggestions: nil,
-		Severity:    severity,
-		Timestamp:   time.Now(),
-		Context:     nil,
-		StackTrace:  nil,
-	}
-}
-
-// NewErrF creates a new error using a format string.
-//
-// Parameters:
-//   - severity: The severity level of the error.
-//   - code: The error code.
-//   - format: The format string.
-//   - args: The arguments for the format string.
-//
-// Returns:
-//   - *Err: A pointer to the new error. Never returns nil.
-func NewErrF[C ErrorCoder](severity SeverityLevel, code C, format string, args ...any) *Err[C] {
-	return &Err[C]{
-		Code:        code,
-		Message:     fmt.Sprintf(format, args...),
-		Suggestions: nil,
-		Severity:    severity,
+		Severity:    FATAL,
 		Timestamp:   time.Now(),
 		Context:     nil,
 		StackTrace:  nil,
@@ -166,22 +144,27 @@ func (e *Err[C]) AddSuggestion(suggestion string) {
 // if the receiver is nil or the trace is empty.
 //
 // Parameters:
-//   - trace: The frame to add.
+//   - prefix: The prefix of the frame.
+//   - call: The call of the frame.
 //
-// The trace is stripped of leading and trailing whitespace.
-func (e *Err[C]) AddFrame(trace string) {
+// If prefix is empty, the call is used as the frame. Otherwise a dot is
+// added between the prefix and the call.
+func (e *Err[C]) AddFrame(prefix, call string) {
 	if e == nil {
 		return
 	}
 
-	trace = strings.TrimSpace(trace)
-	if trace == "" {
-		return
+	var frame string
+
+	if prefix == "" {
+		frame = call
+	} else {
+		frame = prefix + "." + call
 	}
 
 	if e.StackTrace == nil {
-		e.StackTrace = internal.NewStackTrace(trace)
+		e.StackTrace = internal.NewStackTrace(frame)
 	} else {
-		e.StackTrace.AddFrame(trace)
+		e.StackTrace.AddFrame(frame)
 	}
 }

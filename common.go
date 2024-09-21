@@ -1,6 +1,8 @@
 package errors
 
 import (
+	"fmt"
+
 	gcers "github.com/PlayerR9/errors/error"
 )
 
@@ -9,46 +11,54 @@ import (
 type ErrorCode int
 
 const (
+	// BadParameter occurs when a parameter is invalid or is not
+	// valid for some reason. For example, a nil pointer when nil
+	// pointers are not allowed.
 	BadParameter ErrorCode = iota
+
+	// InvalidUsage occurs when users call a function without
+	// proper setups or preconditions.
 	InvalidUsage
+
+	// FailFix occurs when a struct cannot be fixed or resolved
+	// due to an invalid internal state.
 	FailFix
 )
 
-// NewErrInvalidParameter creates a new ErrInvalidParameter error.
+// NewErrInvalidParameter creates a new error.Err[ErrorCode] error.
 //
 // Parameters:
-//   - parameter: the name of the invalid parameter.
-//   - reason: the reason for the error.
+//   - message: The message of the error.
 //
 // Returns:
-//   - *ErrInvalidParameter: the new error. Never returns nil.
-func NewErrInvalidParameter(format string, args ...any) *gcers.Err[ErrorCode] {
-	err := gcers.NewErrF(gcers.FATAL, BadParameter, format, args...)
+//   - *error.Err[ErrorCode]: The new error. Never returns nil.
+func NewErrInvalidParameter(message string) *gcers.Err[ErrorCode] {
+	err := gcers.NewErr(gcers.FATAL, BadParameter, message)
 
 	return err
 }
 
-// NewErrNilParameter creates a new ErrInvalidParameter error.
+// NewErrNilParameter creates a new error.Err[ErrorCode] error.
 //
 // Parameters:
 //   - parameter: the name of the invalid parameter.
 //
 // Returns:
-//   - *ErrInvalidParameter: the new error. Never returns nil.
+//   - *error.Err[ErrorCode]: The new error. Never returns nil.
 func NewErrNilParameter(parameter string) *gcers.Err[ErrorCode] {
-	err := gcers.NewErrF(gcers.FATAL, BadParameter, "parameter %s cannot be nil", parameter)
+	err := gcers.NewErr(gcers.FATAL, BadParameter, fmt.Sprintf("parameter (%q) cannot be nil", parameter))
 
 	return err
 }
 
-// NewErrInvalidUsage creates a new ErrInvalidUsage error.
+// NewErrInvalidUsage creates a new error.Err[ErrorCode] error.
 //
 // Parameters:
-//   - reason: The reason for the invalid usage.
-//   - usage: The usage of the function.
+//   - message: The message of the error.
+//   - usage: The usage/suggestion to solve the problem.
 //
 // Returns:
-//   - *ErrInvalidUsage: A pointer to the new ErrInvalidUsage error.
+//   - *error.Err[ErrorCode]: The new error. Never returns nil.
 func NewErrInvalidUsage(message string, usage string) *gcers.Err[ErrorCode] {
 	err := gcers.NewErr(gcers.FATAL, InvalidUsage, message)
 
@@ -57,14 +67,13 @@ func NewErrInvalidUsage(message string, usage string) *gcers.Err[ErrorCode] {
 	return err
 }
 
-// NewErrFix creates a new ErrFix error.
+// NewErrFix creates a new error.Err[ErrorCode] error.
 //
 // Parameters:
-//   - name: the name of the object.
-//   - reason: the reason for the error.
+//   - message: The message of the error.
 //
 // Returns:
-//   - *ErrFix: the new error. Never returns nil.
+//   - *error.Err[ErrorCode]: The new error. Never returns nil.
 func NewErrFix(message string) *gcers.Err[ErrorCode] {
 	err := gcers.NewErr(gcers.FATAL, FailFix, message)
 
