@@ -11,6 +11,7 @@ type ErrorCode int
 const (
 	BadParameter ErrorCode = iota
 	InvalidUsage
+	FailFix
 )
 
 // NewErrInvalidParameter creates a new ErrInvalidParameter error.
@@ -52,6 +53,20 @@ func NewErrInvalidUsage(message string, usage string) *gcers.Err[ErrorCode] {
 	err := gcers.NewErr(gcers.FATAL, InvalidUsage, message)
 
 	err.AddSuggestion(usage)
+
+	return err
+}
+
+// NewErrFix creates a new ErrFix error.
+//
+// Parameters:
+//   - name: the name of the object.
+//   - reason: the reason for the error.
+//
+// Returns:
+//   - *ErrFix: the new error. Never returns nil.
+func NewErrFix(message string) *gcers.Err[ErrorCode] {
+	err := gcers.NewErr(gcers.FATAL, FailFix, message)
 
 	return err
 }

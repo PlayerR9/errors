@@ -8,49 +8,41 @@ import (
 	"github.com/PlayerR9/errors/error/internal"
 )
 
+// ErrorCoder is an interface that all error codes must implement.
 type ErrorCoder interface {
 	~int
 
-	String() string
+	fmt.Stringer
 }
 
-//go:generate stringer -type=SeverityLevel
-
-type SeverityLevel int
-
-const (
-	// INFO is the severity level for informational messages.
-	// (i.e., errors that are not critical nor fatal)
-	//
-	// Mostly used for message passing.
-	INFO SeverityLevel = iota
-
-	// WARNING is the severity level for warning messages.
-	// (i.e., errors that are not critical nor fatal, yet worthy of attention).
-	WARNING
-
-	// ERROR is the severity level for error messages.
-	// (i.e., the standard error level).
-	ERROR
-
-	// FATAL is the severity level for fatal errors.
-	// (i.e., the highest severity level).
-	//
-	// These are usually panic-level of errors.
-	FATAL
-)
-
+// Err represents a generalized error.
 type Err[C ErrorCoder] struct {
-	Code        C
-	Message     string
+	// Code is the error code.
+	Code C
+
+	// Message is the error message.
+	Message string
+
+	// Suggestions is a list of suggestions for the user.
 	Suggestions []string
-	Severity    SeverityLevel
-	Timestamp   time.Time
-	Context     map[string]any
-	StackTrace  *internal.StackTrace
-	Inner       error
+
+	// Severity is the severity level of the error.
+	Severity SeverityLevel
+
+	// Timestamp is the timestamp of the error.
+	Timestamp time.Time
+
+	// Context is the context of the error.
+	Context map[string]any
+
+	// StackTrace is the stack trace of the error.
+	StackTrace *internal.StackTrace
+
+	// Inner is the inner error of the error.
+	Inner error
 }
 
+// Error implements the error interface.
 func (e Err[C]) Error() string {
 	var builder strings.Builder
 
@@ -101,6 +93,15 @@ func (e Err[C]) Error() string {
 	return builder.String()
 }
 
+// NewErr creates a new error.
+//
+// Parameters:
+//   - severity: The severity level of the error.
+//   - code: The error code.
+//   - message: The error message.
+//
+// Returns:
+//   - *Err: A pointer to the new error. Never returns nil.
 func NewErr[C ErrorCoder](severity SeverityLevel, code C, message string) *Err[C] {
 	return &Err[C]{
 		Code:        code,
@@ -113,6 +114,16 @@ func NewErr[C ErrorCoder](severity SeverityLevel, code C, message string) *Err[C
 	}
 }
 
+// NewErrF creates a new error using a format string.
+//
+// Parameters:
+//   - severity: The severity level of the error.
+//   - code: The error code.
+//   - format: The format string.
+//   - args: The arguments for the format string.
+//
+// Returns:
+//   - *Err: A pointer to the new error. Never returns nil.
 func NewErrF[C ErrorCoder](severity SeverityLevel, code C, format string, args ...any) *Err[C] {
 	return &Err[C]{
 		Code:        code,
@@ -125,6 +136,11 @@ func NewErrF[C ErrorCoder](severity SeverityLevel, code C, format string, args .
 	}
 }
 
+// ChangeSeverity changes the severity level of the error. Does
+// nothing if the receiver is nil.
+//
+// Parameters:
+//   - new_severity: The new severity level of the error.
 func (e *Err[C]) ChangeSeverity(new_severity SeverityLevel) {
 	if e == nil {
 		return
@@ -133,10 +149,39 @@ func (e *Err[C]) ChangeSeverity(new_severity SeverityLevel) {
 	e.Severity = new_severity
 }
 
+// AddSuggestion adds a suggestion to the error. Does nothing
+// if the receiver is nil.
+//
+// Parameters:
+//   - suggestion: The suggestion to add.
 func (e *Err[C]) AddSuggestion(suggestion string) {
 	if e == nil {
 		return
 	}
 
 	e.Suggestions = append(e.Suggestions, suggestion)
+}
+
+// AddFrame prepends a frame to the stack trace. Does nothing
+// if the receiver is nil or the trace is empty.
+//
+// Parameters:
+//   - trace: The frame to add.
+//
+// The trace is stripped of leading and trailing whitespace.
+func (e *Err[C]) AddFrame(trace string) {
+	if e == nil {
+		return
+	}
+
+	trace = strings.TrimSpace(trace)
+	if trace == "" {
+		return
+	}
+
+	if e.StackTrace == nil {
+		e.StackTrace = internal.NewStackTrace(trace)
+	} else {
+		e.StackTrace.AddFrame(trace)
+	}
 }
