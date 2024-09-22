@@ -208,7 +208,7 @@ func (e *Err[C]) AddContext(key string, value any) {
 //   - any: The value of the context with the given key.
 //   - bool: true if the context contains the key, false otherwise.
 func (e Err[C]) Value(key string) (any, bool) {
-	if e.Context == nil {
+	if len(e.Context) == 0 {
 		return nil, false
 	}
 
