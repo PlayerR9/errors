@@ -215,3 +215,33 @@ func (e Err[C]) Value(key string) (any, bool) {
 	value, ok := e.Context[key]
 	return value, ok
 }
+
+var (
+	NoSuchKey error
+)
+
+func init() {
+	NoSuchKey = fmt.Errorf("no such key")
+}
+
+func Value[C ErrorCoder, T any](e *Err[C], key string) (T, error) {
+	if e == nil || len(e.Context) == 0 {
+		return *new(T), NoSuchKey
+	}
+
+	x, ok := e.Context[key]
+	if !ok {
+		return *new(T), NoSuchKey
+	}
+
+	if x == nil {
+		return *new(T), fmt.Errorf("expected key to be of type %T, got nil instead", x)
+	}
+
+	val, ok := x.(T)
+	if !ok {
+		return *new(T), fmt.Errorf("expected key to be of type %T, got %T instead", x, val)
+	}
+
+	return val, nil
+}
