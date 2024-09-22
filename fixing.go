@@ -2,8 +2,6 @@ package errors
 
 import (
 	"strconv"
-
-	gcers "github.com/PlayerR9/errors/error"
 )
 
 // Fixer is defines the behavior of an object that can be fixed. This
@@ -33,7 +31,7 @@ func Fix(name string, obj Fixer, allow_nil bool) error {
 	if obj == nil && !allow_nil {
 		msg := strconv.Quote(name) + " must not be nil"
 
-		return NewErrFix(msg)
+		return NewErrFix(msg, nil)
 	}
 
 	err := obj.Fix()
@@ -41,9 +39,9 @@ func Fix(name string, obj Fixer, allow_nil bool) error {
 		return nil
 	}
 
-	sub_err, ok := err.(*gcers.Err[ErrorCode])
+	sub_err, ok := As(err)
 	if !ok {
-		sub_err = NewErrFix(err.Error())
+		sub_err = NewErrFix("could not fix "+strconv.Quote(name)+":", err)
 	}
 
 	sub_err.AddFrame(name, "Fix()")

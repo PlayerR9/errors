@@ -8,17 +8,10 @@ import (
 	"github.com/PlayerR9/errors/error/internal"
 )
 
-// ErrorCoder is an interface that all error codes must implement.
-type ErrorCoder interface {
-	~int
-
-	fmt.Stringer
-}
-
 // Err represents a generalized error.
-type Err[C ErrorCoder] struct {
+type Err struct {
 	// Code is the error code.
-	Code C
+	Code ErrorCoder
 
 	// Message is the error message.
 	Message string
@@ -43,7 +36,7 @@ type Err[C ErrorCoder] struct {
 }
 
 // Error implements the error interface.
-func (e Err[C]) Error() string {
+func (e Err) Error() string {
 	var builder strings.Builder
 
 	builder.WriteRune('[')
@@ -102,8 +95,8 @@ func (e Err[C]) Error() string {
 //
 // Returns:
 //   - *Err: A pointer to the new error. Never returns nil.
-func NewErr[C ErrorCoder](severity SeverityLevel, code C, message string) *Err[C] {
-	return &Err[C]{
+func NewErr[C ErrorCoder](severity SeverityLevel, code C, message string) *Err {
+	return &Err{
 		Code:        code,
 		Message:     message,
 		Suggestions: nil,
@@ -119,7 +112,7 @@ func NewErr[C ErrorCoder](severity SeverityLevel, code C, message string) *Err[C
 //
 // Parameters:
 //   - new_severity: The new severity level of the error.
-func (e *Err[C]) ChangeSeverity(new_severity SeverityLevel) {
+func (e *Err) ChangeSeverity(new_severity SeverityLevel) {
 	if e == nil {
 		return
 	}
@@ -132,7 +125,7 @@ func (e *Err[C]) ChangeSeverity(new_severity SeverityLevel) {
 //
 // Parameters:
 //   - suggestion: The suggestion to add.
-func (e *Err[C]) AddSuggestion(suggestion string) {
+func (e *Err) AddSuggestion(suggestion string) {
 	if e == nil {
 		return
 	}
@@ -149,7 +142,7 @@ func (e *Err[C]) AddSuggestion(suggestion string) {
 //
 // If prefix is empty, the call is used as the frame. Otherwise a dot is
 // added between the prefix and the call.
-func (e *Err[C]) AddFrame(prefix, call string) {
+func (e *Err) AddFrame(prefix, call string) {
 	if e == nil {
 		return
 	}
@@ -173,7 +166,7 @@ func (e *Err[C]) AddFrame(prefix, call string) {
 //
 // Parameters:
 //   - inner: The inner error.
-func (e *Err[C]) SetInner(inner error) {
+func (e *Err) SetInner(inner error) {
 	if e == nil {
 		return
 	}
@@ -187,7 +180,7 @@ func (e *Err[C]) SetInner(inner error) {
 // Parameters:
 //   - key: The key of the context.
 //   - value: The value of the context.
-func (e *Err[C]) AddContext(key string, value any) {
+func (e *Err) AddContext(key string, value any) {
 	if e == nil {
 		return
 	}
@@ -207,41 +200,11 @@ func (e *Err[C]) AddContext(key string, value any) {
 // Returns:
 //   - any: The value of the context with the given key.
 //   - bool: true if the context contains the key, false otherwise.
-func (e Err[C]) Value(key string) (any, bool) {
+func (e Err) Value(key string) (any, bool) {
 	if len(e.Context) == 0 {
 		return nil, false
 	}
 
 	value, ok := e.Context[key]
 	return value, ok
-}
-
-var (
-	NoSuchKey error
-)
-
-func init() {
-	NoSuchKey = fmt.Errorf("no such key")
-}
-
-func Value[C ErrorCoder, T any](e *Err[C], key string) (T, error) {
-	if e == nil || len(e.Context) == 0 {
-		return *new(T), NoSuchKey
-	}
-
-	x, ok := e.Context[key]
-	if !ok {
-		return *new(T), NoSuchKey
-	}
-
-	if x == nil {
-		return *new(T), fmt.Errorf("expected key to be of type %T, got nil instead", x)
-	}
-
-	val, ok := x.(T)
-	if !ok {
-		return *new(T), fmt.Errorf("expected key to be of type %T, got %T instead", x, val)
-	}
-
-	return val, nil
 }
