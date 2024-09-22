@@ -198,3 +198,20 @@ func (e *Err[C]) AddContext(key string, value any) {
 
 	e.Context[key] = value
 }
+
+// Value returns the value of the context with the given key.
+//
+// Parameters:
+//   - key: The key of the context.
+//
+// Returns:
+//   - any: The value of the context with the given key.
+//   - bool: true if the context contains the key, false otherwise.
+func (e Err[C]) Value(key string) (any, bool) {
+	if e.Context == nil {
+		return nil, false
+	}
+
+	value, ok := e.Context[key]
+	return value, ok
+}
