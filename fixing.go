@@ -1,7 +1,7 @@
 package errors
 
 import (
-	"fmt"
+	"strconv"
 
 	gcers "github.com/PlayerR9/errors/error"
 )
@@ -31,7 +31,9 @@ func Fix(name string, obj Fixer, allow_nil bool) error {
 	}
 
 	if obj == nil && !allow_nil {
-		return NewErrFix(fmt.Sprintf("%q must not be nil", name))
+		msg := strconv.Quote(name) + " must not be nil"
+
+		return NewErrFix(msg)
 	}
 
 	err := obj.Fix()
