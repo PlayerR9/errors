@@ -180,3 +180,21 @@ func (e *Err[C]) SetInner(inner error) {
 
 	e.Inner = inner
 }
+
+// AddContext adds a context to the error. Does nothing if the
+// receiver is nil.
+//
+// Parameters:
+//   - key: The key of the context.
+//   - value: The value of the context.
+func (e *Err[C]) AddContext(key string, value any) {
+	if e == nil {
+		return
+	}
+
+	if e.Context == nil {
+		e.Context = make(map[string]any)
+	}
+
+	e.Context[key] = value
+}
