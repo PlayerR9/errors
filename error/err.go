@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/PlayerR9/errors/error/internal"
+	"github.com/PlayerR9/go-errors/error/internal"
 )
 
 // Err represents a generalized error.

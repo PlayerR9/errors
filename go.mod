@@ -1,3 +1,3 @@
-module github.com/PlayerR9/errors
+module github.com/PlayerR9/go-errors
 
 go 1.23.1

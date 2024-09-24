@@ -3,7 +3,7 @@ package errors
 import (
 	"strconv"
 
-	gcers "github.com/PlayerR9/errors/error"
+	gcers "github.com/PlayerR9/go-errors/error"
 )
 
 //go:generate stringer -type=ErrorCode

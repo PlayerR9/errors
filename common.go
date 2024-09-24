@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	gcers "github.com/PlayerR9/errors/error"
+	gcers "github.com/PlayerR9/go-errors/error"
 )
 
 // Is is function that checks if an error is of type T.
