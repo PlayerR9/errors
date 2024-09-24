@@ -86,7 +86,27 @@ func (e Err) Error() string {
 	return builder.String()
 }
 
-// NewErr creates a new error.
+// New creates a new error.
+//
+// Parameters:
+//   - code: The error code.
+//   - message: The error message.
+//
+// Returns:
+//   - *Err: A pointer to the new error. Never returns nil.
+func New[C ErrorCoder](code C, message string) *Err {
+	return &Err{
+		Code:        code,
+		Message:     message,
+		Suggestions: nil,
+		Severity:    ERROR,
+		Timestamp:   time.Now(),
+		Context:     nil,
+		StackTrace:  nil,
+	}
+}
+
+// NewWithSeverity creates a new error.
 //
 // Parameters:
 //   - severity: The severity level of the error.
@@ -95,7 +115,7 @@ func (e Err) Error() string {
 //
 // Returns:
 //   - *Err: A pointer to the new error. Never returns nil.
-func NewErr[C ErrorCoder](severity SeverityLevel, code C, message string) *Err {
+func NewWithSeverity[C ErrorCoder](severity SeverityLevel, code C, message string) *Err {
 	return &Err{
 		Code:        code,
 		Message:     message,

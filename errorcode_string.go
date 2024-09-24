@@ -11,11 +11,14 @@ func _() {
 	_ = x[BadParameter-0]
 	_ = x[InvalidUsage-1]
 	_ = x[FailFix-2]
+	_ = x[OperationFail-3]
+	_ = x[NoSuchKey-4]
+	_ = x[AssertFail-5]
 }
 
-const _ErrorCode_name = "BadParameterInvalidUsageFailFix"
+const _ErrorCode_name = "BadParameterInvalidUsageFailFixOperationFailNoSuchKeyAssertFail"
 
-var _ErrorCode_index = [...]uint8{0, 12, 24, 31}
+var _ErrorCode_index = [...]uint8{0, 12, 24, 31, 44, 53, 63}
 
 func (i ErrorCode) String() string {
 	if i < 0 || i >= ErrorCode(len(_ErrorCode_index)-1) {

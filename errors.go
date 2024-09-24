@@ -31,6 +31,9 @@ const (
 	// NoSuchKey occurs when a context key is requested but does
 	// not exist.
 	NoSuchKey
+
+	// AssertFail occurs when an assertion fails.
+	AssertFail
 )
 
 // Int implements the error.ErrorCoder interface.
@@ -46,7 +49,7 @@ func (e ErrorCode) Int() int {
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
 func NewErrInvalidParameter(message string) *gcers.Err {
-	err := gcers.NewErr(gcers.FATAL, BadParameter, message)
+	err := gcers.New(BadParameter, message)
 
 	return err
 }
@@ -61,7 +64,7 @@ func NewErrInvalidParameter(message string) *gcers.Err {
 func NewErrNilParameter(parameter string) *gcers.Err {
 	msg := "parameter (" + strconv.Quote(parameter) + ") must not be nil"
 
-	err := gcers.NewErr(gcers.FATAL, BadParameter, msg)
+	err := gcers.New(BadParameter, msg)
 
 	return err
 }
@@ -75,7 +78,7 @@ func NewErrNilParameter(parameter string) *gcers.Err {
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
 func NewErrInvalidUsage(message string, usage string) *gcers.Err {
-	err := gcers.NewErr(gcers.FATAL, InvalidUsage, message)
+	err := gcers.New(InvalidUsage, message)
 
 	err.AddSuggestion(usage)
 
@@ -91,7 +94,7 @@ func NewErrInvalidUsage(message string, usage string) *gcers.Err {
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
 func NewErrFix(message string, reason error) *gcers.Err {
-	err := gcers.NewErr(gcers.FATAL, FailFix, message)
+	err := gcers.New(FailFix, message)
 	err.SetInner(reason)
 
 	return err
@@ -114,7 +117,7 @@ func NewErrAt(at string, reason error) *gcers.Err {
 		msg = "an error occurred at " + at
 	}
 
-	err := gcers.NewErr(gcers.FATAL, OperationFail, msg)
+	err := gcers.New(OperationFail, msg)
 	err.SetInner(reason)
 
 	return err
@@ -137,7 +140,7 @@ func NewErrAfter(before string, reason error) *gcers.Err {
 		msg = "an error occurred after " + before
 	}
 
-	err := gcers.NewErr(gcers.FATAL, OperationFail, msg)
+	err := gcers.New(OperationFail, msg)
 	err.SetInner(reason)
 
 	return err
@@ -160,7 +163,7 @@ func NewErrBefore(after string, reason error) *gcers.Err {
 		msg = "an error occurred before " + after
 	}
 
-	err := gcers.NewErr(gcers.FATAL, OperationFail, msg)
+	err := gcers.New(OperationFail, msg)
 	err.SetInner(reason)
 
 	return err
@@ -174,7 +177,18 @@ func NewErrBefore(after string, reason error) *gcers.Err {
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
 func NewErrNoSuchKey(key string) *gcers.Err {
-	err := gcers.NewErr(gcers.FATAL, NoSuchKey, "key ("+strconv.Quote(key)+") does not exist")
+	err := gcers.New(NoSuchKey, "key ("+strconv.Quote(key)+") does not exist")
 
 	return err
+}
+
+// NewErrAssertFail creates a new error.Err error.
+//
+// Parameters:
+//   - msg: The message of the error.
+//
+// Returns:
+//   - *error.Err: The new error. Never returns nil.
+func NewErrAssertFail(msg string) *gcers.Err {
+	return gcers.NewWithSeverity(gcers.FATAL, AssertFail, msg)
 }
