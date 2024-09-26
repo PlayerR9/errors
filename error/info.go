@@ -27,6 +27,10 @@ type Info struct {
 	Inner error
 }
 
+// NewInfo creates a new Info.
+//
+// Returns:
+//   - *Info: A pointer to the new Info. Never returns nil.
 func NewInfo() *Info {
 	return &Info{
 		Suggestions: nil,
@@ -37,6 +41,21 @@ func NewInfo() *Info {
 	}
 }
 
+// IsNil checks whether the info is nil.
+//
+// Returns:
+//   - bool: True if the info is nil, false otherwise.
+func (info *Info) IsNil() bool {
+	return info == nil
+}
+
+// DisplayInfo displays the info to the writer.
+//
+// Parameters:
+//   - w: The writer to write to.
+//
+// Returns:
+//   - error: The error that occurred while displaying the info.
 func (info Info) DisplayInfo(w io.Writer) error {
 	var b bytes.Buffer
 

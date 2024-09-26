@@ -114,6 +114,14 @@ func NewFromError[C ErrorCoder](code C, err error) *Err {
 	return outer
 }
 
+// IsNil checks whether the error is nil.
+//
+// Returns:
+//   - bool: True if the error is nil, false otherwise.
+func (e *Err) IsNil() bool {
+	return e == nil
+}
+
 // ChangeSeverity changes the severity level of the error. Does
 // nothing if the receiver is nil.
 //

@@ -6,8 +6,7 @@ import (
 	gerr "github.com/PlayerR9/go-errors/error"
 )
 
-//go:generate stringer -type=ErrorCode
-
+// ErrorCode is the type of the error code.
 type ErrorCode int
 
 const (
@@ -48,6 +47,8 @@ func (e ErrorCode) Int() int {
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
+//
+// This function is mostly useless since it just wraps BadParameter.
 func NewErrInvalidParameter(message string) *gerr.Err {
 	err := gerr.New(BadParameter, message)
 

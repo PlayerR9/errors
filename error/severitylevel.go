@@ -1,7 +1,5 @@
 package error
 
-//go:generate stringer -type=SeverityLevel
-
 // SeverityLevel represents the severity level of an error.
 type SeverityLevel int
 
