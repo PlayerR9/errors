@@ -94,7 +94,7 @@ func NewFromError[C ErrorCoder](code C, err error) *Err {
 			outer = &Err{
 				Code:    code,
 				Message: inner.Message,
-				Info:    inner.Info,
+				Info:    inner.Info.Copy(),
 			}
 
 			inner.Info = nil // Clear any info since it is now in the outer error.

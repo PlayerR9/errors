@@ -41,6 +41,20 @@ func NewInfo() *Info {
 	}
 }
 
+// Copy creates a shallow copy of the Info.
+//
+// Returns:
+//   - *Info: A pointer to the new Info. Never returns nil.
+func (info Info) Copy() *Info {
+	return &Info{
+		Suggestions: info.Suggestions,
+		Timestamp:   info.Timestamp,
+		Context:     info.Context,
+		StackTrace:  info.StackTrace,
+		Inner:       info.Inner,
+	}
+}
+
 // IsNil checks whether the info is nil.
 //
 // Returns:
