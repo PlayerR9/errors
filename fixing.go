@@ -2,6 +2,8 @@ package errors
 
 import (
 	"strconv"
+
+	gerr "github.com/PlayerR9/go-errors/error"
 )
 
 // Fixer is defines the behavior of an object that can be fixed. This
@@ -31,7 +33,8 @@ func Fix(name string, obj Fixer, allow_nil bool) error {
 	if obj == nil && !allow_nil {
 		msg := strconv.Quote(name) + " must not be nil"
 
-		return NewErrFix(msg, nil)
+		err := gerr.New(FailFix, msg)
+		return err
 	}
 
 	err := obj.Fix()
@@ -39,12 +42,8 @@ func Fix(name string, obj Fixer, allow_nil bool) error {
 		return nil
 	}
 
-	sub_err, ok := As(err)
-	if !ok {
-		sub_err = NewErrFix("could not fix "+strconv.Quote(name)+":", err)
-	}
+	new_err := gerr.NewFromError(FailFix, err)
+	new_err.AddFrame(name + ".Fix()")
 
-	sub_err.AddFrame(name, "Fix()")
-
-	return sub_err
+	return new_err
 }

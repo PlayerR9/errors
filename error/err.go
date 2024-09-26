@@ -2,88 +2,36 @@ package error
 
 import (
 	"fmt"
-	"strings"
-	"time"
+	"io"
 
 	"github.com/PlayerR9/go-errors/error/internal"
 )
 
 // Err represents a generalized error.
 type Err struct {
+	// Severity is the severity level of the error.
+	Severity SeverityLevel
+
 	// Code is the error code.
 	Code ErrorCoder
 
 	// Message is the error message.
 	Message string
 
-	// Suggestions is a list of suggestions for the user.
-	Suggestions []string
-
-	// Severity is the severity level of the error.
-	Severity SeverityLevel
-
-	// Timestamp is the timestamp of the error.
-	Timestamp time.Time
-
-	// Context is the context of the error.
-	Context map[string]any
-
-	// StackTrace is the stack trace of the error.
-	StackTrace *internal.StackTrace
-
-	// Inner is the inner error of the error.
-	Inner error
+	*Info
 }
 
 // Error implements the error interface.
 func (e Err) Error() string {
-	var builder strings.Builder
-
-	builder.WriteRune('[')
-	builder.WriteString(e.Severity.String())
-	builder.WriteString("] Error ")
-	builder.WriteString(e.Code.String())
-	builder.WriteString(": ")
+	var msg string
 
 	if e.Message == "" {
-		builder.WriteString("[no message was provided]")
+		msg = "[no message was provided]"
 	} else {
-		builder.WriteString(e.Message)
+		msg = e.Message
 	}
 
-	if !e.Timestamp.IsZero() {
-		builder.WriteString("\noccurred at: ")
-		builder.WriteString(e.Timestamp.String())
-	}
-
-	if len(e.Suggestions) > 0 {
-		builder.WriteString("\n\nsuggestion: ")
-
-		for _, suggestion := range e.Suggestions {
-			builder.WriteString("\n- ")
-			builder.WriteString(suggestion)
-		}
-	}
-
-	if len(e.Context) > 0 {
-		builder.WriteString("\n\ncontext: ")
-
-		for k, v := range e.Context {
-			fmt.Fprintf(&builder, "\n- %s: %v", k, v)
-		}
-	}
-
-	if e.StackTrace != nil {
-		builder.WriteString("\nstack trace:\n\t")
-		builder.WriteString(e.StackTrace.String())
-	}
-
-	if e.Inner != nil {
-		builder.WriteString("\n\ncaused by: ")
-		builder.WriteString(e.Inner.Error())
-	}
-
-	return builder.String()
+	return fmt.Sprintf("[%v] %v: %s", e.Severity, e.Code, msg)
 }
 
 // New creates a new error.
@@ -96,13 +44,10 @@ func (e Err) Error() string {
 //   - *Err: A pointer to the new error. Never returns nil.
 func New[C ErrorCoder](code C, message string) *Err {
 	return &Err{
-		Code:        code,
-		Message:     message,
-		Suggestions: nil,
-		Severity:    ERROR,
-		Timestamp:   time.Now(),
-		Context:     nil,
-		StackTrace:  nil,
+		Severity: ERROR,
+		Code:     code,
+		Message:  message,
+		Info:     NewInfo(),
 	}
 }
 
@@ -117,14 +62,56 @@ func New[C ErrorCoder](code C, message string) *Err {
 //   - *Err: A pointer to the new error. Never returns nil.
 func NewWithSeverity[C ErrorCoder](severity SeverityLevel, code C, message string) *Err {
 	return &Err{
-		Code:        code,
-		Message:     message,
-		Suggestions: nil,
-		Severity:    FATAL,
-		Timestamp:   time.Now(),
-		Context:     nil,
-		StackTrace:  nil,
+		Severity: severity,
+		Code:     code,
+		Message:  message,
+		Info:     NewInfo(),
 	}
+}
+
+// NewFromError creates a new error from an error.
+//
+// Parameters:
+//   - code: The error code.
+//   - err: The error to wrap.
+//
+// Returns:
+//   - *Err: A pointer to the new error. Never returns nil.
+func NewFromError[C ErrorCoder](code C, err error) *Err {
+	var outer *Err
+
+	if err == nil {
+		outer = &Err{
+			Code:    code,
+			Message: "something went wrong",
+			Info:    NewInfo(),
+		}
+	} else {
+		switch inner := err.(type) {
+		case *Err:
+			// TODO: Handle this case.
+
+			outer = &Err{
+				Code:    code,
+				Message: inner.Message,
+				Info:    inner.Info,
+			}
+
+			inner.Info = nil // Clear any info since it is now in the outer error.
+		default:
+			// TODO: Handle this case.
+
+			outer = &Err{
+				Code:    code,
+				Message: inner.Error(),
+				Info:    NewInfo(),
+			}
+		}
+	}
+
+	outer.Severity = ERROR
+
+	return outer
 }
 
 // ChangeSeverity changes the severity level of the error. Does
@@ -157,22 +144,13 @@ func (e *Err) AddSuggestion(suggestion string) {
 // if the receiver is nil or the trace is empty.
 //
 // Parameters:
-//   - prefix: The prefix of the frame.
-//   - call: The call of the frame.
+//   - frame: The frame to add.
 //
 // If prefix is empty, the call is used as the frame. Otherwise a dot is
 // added between the prefix and the call.
-func (e *Err) AddFrame(prefix, call string) {
+func (e *Err) AddFrame(frame string) {
 	if e == nil {
 		return
-	}
-
-	var frame string
-
-	if prefix == "" {
-		frame = call
-	} else {
-		frame = prefix + "." + call
 	}
 
 	if e.StackTrace == nil {
@@ -227,4 +205,41 @@ func (e Err) Value(key string) (any, bool) {
 
 	value, ok := e.Context[key]
 	return value, ok
+}
+
+// DisplayError displays the complete error to the writer.
+//
+// Parameters:
+//   - w: The writer to write to.
+//   - err: The error to display.
+//
+// Returns:
+//   - error: The error that occurred while displaying the error.
+func DisplayError(w io.Writer, err error) error {
+	if err == nil {
+		return nil
+	} else if w == nil {
+		return io.ErrShortWrite
+	}
+
+	data := []byte(err.Error())
+
+	n, err := w.Write(data)
+	if err != nil {
+		return err
+	} else if n != len(data) {
+		return io.ErrShortWrite
+	}
+
+	e, ok := err.(*Err)
+	if !ok || e.Info == nil {
+		return nil
+	}
+
+	err = e.DisplayInfo(w)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

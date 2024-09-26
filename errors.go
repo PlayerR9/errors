@@ -3,7 +3,7 @@ package errors
 import (
 	"strconv"
 
-	gcers "github.com/PlayerR9/go-errors/error"
+	gerr "github.com/PlayerR9/go-errors/error"
 )
 
 //go:generate stringer -type=ErrorCode
@@ -48,8 +48,8 @@ func (e ErrorCode) Int() int {
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrInvalidParameter(message string) *gcers.Err {
-	err := gcers.New(BadParameter, message)
+func NewErrInvalidParameter(message string) *gerr.Err {
+	err := gerr.New(BadParameter, message)
 
 	return err
 }
@@ -61,10 +61,10 @@ func NewErrInvalidParameter(message string) *gcers.Err {
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrNilParameter(parameter string) *gcers.Err {
+func NewErrNilParameter(parameter string) *gerr.Err {
 	msg := "parameter (" + strconv.Quote(parameter) + ") must not be nil"
 
-	err := gcers.New(BadParameter, msg)
+	err := gerr.New(BadParameter, msg)
 
 	return err
 }
@@ -77,25 +77,10 @@ func NewErrNilParameter(parameter string) *gcers.Err {
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrInvalidUsage(message string, usage string) *gcers.Err {
-	err := gcers.New(InvalidUsage, message)
+func NewErrInvalidUsage(message string, usage string) *gerr.Err {
+	err := gerr.New(InvalidUsage, message)
 
 	err.AddSuggestion(usage)
-
-	return err
-}
-
-// NewErrFix creates a new error.Err error.
-//
-// Parameters:
-//   - message: The message of the error.
-//   - reason: The reason for the error.
-//
-// Returns:
-//   - *error.Err: The new error. Never returns nil.
-func NewErrFix(message string, reason error) *gcers.Err {
-	err := gcers.New(FailFix, message)
-	err.SetInner(reason)
 
 	return err
 }
@@ -108,7 +93,7 @@ func NewErrFix(message string, reason error) *gcers.Err {
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrAt(at string, reason error) *gcers.Err {
+func NewErrAt(at string, reason error) *gerr.Err {
 	var msg string
 
 	if at == "" {
@@ -117,7 +102,7 @@ func NewErrAt(at string, reason error) *gcers.Err {
 		msg = "an error occurred at " + at
 	}
 
-	err := gcers.New(OperationFail, msg)
+	err := gerr.New(OperationFail, msg)
 	err.SetInner(reason)
 
 	return err
@@ -131,7 +116,7 @@ func NewErrAt(at string, reason error) *gcers.Err {
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrAfter(before string, reason error) *gcers.Err {
+func NewErrAfter(before string, reason error) *gerr.Err {
 	var msg string
 
 	if before == "" {
@@ -140,7 +125,7 @@ func NewErrAfter(before string, reason error) *gcers.Err {
 		msg = "an error occurred after " + before
 	}
 
-	err := gcers.New(OperationFail, msg)
+	err := gerr.New(OperationFail, msg)
 	err.SetInner(reason)
 
 	return err
@@ -154,7 +139,7 @@ func NewErrAfter(before string, reason error) *gcers.Err {
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrBefore(after string, reason error) *gcers.Err {
+func NewErrBefore(after string, reason error) *gerr.Err {
 	var msg string
 
 	if after == "" {
@@ -163,7 +148,7 @@ func NewErrBefore(after string, reason error) *gcers.Err {
 		msg = "an error occurred before " + after
 	}
 
-	err := gcers.New(OperationFail, msg)
+	err := gerr.New(OperationFail, msg)
 	err.SetInner(reason)
 
 	return err
@@ -176,8 +161,8 @@ func NewErrBefore(after string, reason error) *gcers.Err {
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrNoSuchKey(key string) *gcers.Err {
-	err := gcers.New(NoSuchKey, "key ("+strconv.Quote(key)+") does not exist")
+func NewErrNoSuchKey(key string) *gerr.Err {
+	err := gerr.New(NoSuchKey, "key ("+strconv.Quote(key)+") does not exist")
 
 	return err
 }
@@ -189,6 +174,6 @@ func NewErrNoSuchKey(key string) *gcers.Err {
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrAssertFail(msg string) *gcers.Err {
-	return gcers.NewWithSeverity(gcers.FATAL, AssertFail, msg)
+func NewErrAssertFail(msg string) *gerr.Err {
+	return gerr.NewWithSeverity(gerr.FATAL, AssertFail, msg)
 }
