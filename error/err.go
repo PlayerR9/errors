@@ -232,9 +232,9 @@ func DisplayError(w io.Writer, err error) error {
 
 	data := []byte(err.Error())
 
-	n, err := w.Write(data)
-	if err != nil {
-		return err
+	n, tmp := w.Write(data)
+	if tmp != nil {
+		return tmp
 	} else if n != len(data) {
 		return io.ErrShortWrite
 	}
@@ -245,9 +245,5 @@ func DisplayError(w io.Writer, err error) error {
 	}
 
 	err = e.DisplayInfo(w)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
