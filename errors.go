@@ -10,35 +10,49 @@ import (
 type ErrorCode int
 
 const (
+	// AssertFail occurs when an assertion fails.
+	AssertFail ErrorCode = iota
+
 	// BadParameter occurs when a parameter is invalid or is not
 	// valid for some reason. For example, a nil pointer when nil
 	// pointers are not allowed.
-	BadParameter ErrorCode = iota
-
-	// InvalidUsage occurs when users call a function without
-	// proper setups or preconditions.
-	InvalidUsage
+	BadParameter
 
 	// FailFix occurs when a struct cannot be fixed or resolved
 	// due to an invalid internal state.
 	FailFix
 
-	// OperationFail occurs when an operation cannot be completed
-	// due to an internal error.
-	OperationFail
+	// InvalidUsage occurs when users call a function without
+	// proper setups or preconditions.
+	InvalidUsage
 
 	// NoSuchKey occurs when a context key is requested but does
 	// not exist.
 	NoSuchKey
 
-	// AssertFail occurs when an assertion fails.
-	AssertFail
+	// OperationFail occurs when an operation cannot be completed
+	// due to an internal error.
+	OperationFail
 )
 
 // Int implements the error.ErrorCoder interface.
 func (e ErrorCode) Int() int {
 	return int(e)
 }
+
+// NewErrNilReceiver creates a new error.Err error with the code
+// OperationFail.
+//
+// Returns:
+//   - *error.Err: The new error. Never returns nil.
+func NewErrNilReceiver() *gerr.Err {
+	err := gerr.New(OperationFail, "receiver must not be nil")
+	err.AddSuggestion("Did you forget to initialize the receiver?")
+
+	return err
+}
+
+////////////////////////////////////////////////////////////
 
 // NewErrInvalidParameter creates a new error.Err error.
 //
