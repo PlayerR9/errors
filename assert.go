@@ -139,7 +139,7 @@ func AssertNotNil(obj any, name string) {
 //   - obj: The object to assert is not its zero value.
 //   - name: The name of the object to use for the error message.
 func AssertNotZero[T comparable](obj T, name string) {
-	zero := ZeroOf[T]()
+	zero := *new(T)
 
 	if obj != zero {
 		return
@@ -170,7 +170,7 @@ func AssertType[T any](obj any, name string, allow_nil bool) {
 		name = "object"
 	}
 
-	zero := ZeroOf[T]()
+	zero := *new(T)
 
 	var msg string
 
@@ -206,7 +206,7 @@ func AssertConv[T any](obj any, name string) T {
 		name = "object"
 	}
 
-	zero := ZeroOf[T]()
+	zero := *new(T)
 
 	var msg string
 
@@ -244,7 +244,7 @@ func AssertNew[T comparable](obj T, inner error) T {
 		panic(err)
 	}
 
-	zero := ZeroOf[T]()
+	zero := *new(T)
 
 	if obj == zero {
 		err := gerr.New(AssertFail, "object must not be zero value")
