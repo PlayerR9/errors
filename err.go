@@ -1,10 +1,9 @@
-package error
+package errors
 
 import (
 	"fmt"
-	"io"
 
-	"github.com/PlayerR9/go-errors/error/internal"
+	"github.com/PlayerR9/go-errors/internal"
 )
 
 // Err represents a generalized error.
@@ -18,7 +17,7 @@ type Err struct {
 	// Message is the error message.
 	Message string
 
-	*Info
+	*internal.Info
 }
 
 // Error implements the error interface.
@@ -34,6 +33,11 @@ func (e Err) Error() string {
 	return fmt.Sprintf("[%v] %v: %s", e.Severity, e.Code, msg)
 }
 
+// IsNil implements the Pointer interface.
+func (e *Err) IsNil() bool {
+	return e == nil
+}
+
 // New creates a new error.
 //
 // Parameters:
@@ -47,7 +51,7 @@ func New[C ErrorCoder](code C, message string) *Err {
 		Severity: ERROR,
 		Code:     code,
 		Message:  message,
-		Info:     NewInfo(),
+		Info:     internal.NewInfo(),
 	}
 }
 
@@ -65,7 +69,7 @@ func NewWithSeverity[C ErrorCoder](severity SeverityLevel, code C, message strin
 		Severity: severity,
 		Code:     code,
 		Message:  message,
-		Info:     NewInfo(),
+		Info:     internal.NewInfo(),
 	}
 }
 
@@ -84,13 +88,11 @@ func NewFromError[C ErrorCoder](code C, err error) *Err {
 		outer = &Err{
 			Code:    code,
 			Message: "something went wrong",
-			Info:    NewInfo(),
+			Info:    internal.NewInfo(),
 		}
 	} else {
 		switch inner := err.(type) {
 		case *Err:
-			// TODO: Handle this case.
-
 			outer = &Err{
 				Code:    code,
 				Message: inner.Message,
@@ -99,12 +101,10 @@ func NewFromError[C ErrorCoder](code C, err error) *Err {
 
 			inner.Info = nil // Clear any info since it is now in the outer error.
 		default:
-			// TODO: Handle this case.
-
 			outer = &Err{
 				Code:    code,
 				Message: inner.Error(),
-				Info:    NewInfo(),
+				Info:    internal.NewInfo(),
 			}
 		}
 	}
@@ -112,14 +112,6 @@ func NewFromError[C ErrorCoder](code C, err error) *Err {
 	outer.Severity = ERROR
 
 	return outer
-}
-
-// IsNil checks whether the error is nil.
-//
-// Returns:
-//   - bool: True if the error is nil, false otherwise.
-func (e *Err) IsNil() bool {
-	return e == nil
 }
 
 // ChangeSeverity changes the severity level of the error. Does
@@ -161,11 +153,7 @@ func (e *Err) AddFrame(frame string) {
 		return
 	}
 
-	if e.StackTrace == nil {
-		e.StackTrace = internal.NewStackTrace(frame)
-	} else {
-		e.StackTrace.AddFrame(frame)
-	}
+	e.StackTrace = append(e.StackTrace, frame)
 }
 
 // SetInner sets the inner error. Does nothing if the receiver is nil.
@@ -213,37 +201,4 @@ func (e Err) Value(key string) (any, bool) {
 
 	value, ok := e.Context[key]
 	return value, ok
-}
-
-// DisplayError displays the complete error to the writer.
-//
-// Parameters:
-//   - w: The writer to write to.
-//   - err: The error to display.
-//
-// Returns:
-//   - error: The error that occurred while displaying the error.
-func DisplayError(w io.Writer, err error) error {
-	if err == nil {
-		return nil
-	} else if w == nil {
-		return io.ErrShortWrite
-	}
-
-	data := []byte(err.Error())
-
-	n, tmp := w.Write(data)
-	if tmp != nil {
-		return tmp
-	} else if n != len(data) {
-		return io.ErrShortWrite
-	}
-
-	e, ok := err.(*Err)
-	if !ok || e.Info == nil {
-		return nil
-	}
-
-	err = e.DisplayInfo(w)
-	return err
 }

@@ -1,4 +1,4 @@
-package error
+package errors
 
 // SeverityLevel represents the severity level of an error.
 type SeverityLevel int

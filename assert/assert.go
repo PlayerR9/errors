@@ -1,12 +1,13 @@
-package errors
+package assert
 
 import (
 	"fmt"
+	"os"
 
-	gerr "github.com/PlayerR9/go-errors/error"
+	gers "github.com/PlayerR9/go-errors"
 )
 
-// Assert asserts that a condition is true.
+// Cond asserts that a condition is true.
 //
 // If the condition is false, it calls panic() with an error.Err with the
 // code AssertFail and the given message.
@@ -14,16 +15,18 @@ import (
 // Parameters:
 //   - cond: The condition to assert.
 //   - msg: The message to use if the condition is false.
-func Assert(cond bool, msg string) {
+func Cond(cond bool, msg string) {
 	if cond {
 		return
 	}
 
-	err := gerr.NewWithSeverity(gerr.FATAL, AssertFail, msg)
-	panic(err)
+	err := gers.NewWithSeverity(gers.FATAL, AssertFail, msg)
+	err.AddFrame("assert.Cond")
+
+	gers.Panic(os.Stderr, err)
 }
 
-// AssertF asserts that a condition is true.
+// CondF asserts that a condition is true.
 //
 // If the condition is false, it calls panic() with an error.Err with the
 // code AssertFail and a message that includes the formatted string.
@@ -32,18 +35,20 @@ func Assert(cond bool, msg string) {
 //   - cond: The condition to assert.
 //   - format: The format string to use for the message.
 //   - args: The arguments to pass to the format string.
-func AssertF(cond bool, format string, args ...any) {
+func CondF(cond bool, format string, args ...any) {
 	if cond {
 		return
 	}
 
 	msg := fmt.Sprintf(format, args...)
 
-	err := gerr.NewWithSeverity(gerr.FATAL, AssertFail, msg)
-	panic(err)
+	err := gers.NewWithSeverity(gers.FATAL, AssertFail, msg)
+	err.AddFrame("assert.CondF")
+
+	gers.Panic(os.Stderr, err)
 }
 
-// AssertErr asserts that an error is nil.
+// Err asserts that an error is nil.
 //
 // If the error is not nil, it calls panic() with an error.Err with the
 // code AssertFail and a message that includes the original error.
@@ -52,7 +57,7 @@ func AssertF(cond bool, format string, args ...any) {
 //   - err: The error to check.
 //   - format: The format string to use for the message.
 //   - args: The arguments to pass to the format string.
-func AssertErr(inner error, format string, args ...any) {
+func Err(inner error, format string, args ...any) {
 	if inner == nil {
 		return
 	}
@@ -60,11 +65,13 @@ func AssertErr(inner error, format string, args ...any) {
 	msg := fmt.Sprintf(format, args...)
 	msg += " = " + inner.Error()
 
-	err := gerr.NewWithSeverity(gerr.FATAL, AssertFail, msg)
-	panic(err)
+	err := gers.NewWithSeverity(gers.FATAL, AssertFail, msg)
+	err.AddFrame("assert.Err")
+
+	gers.Panic(os.Stderr, err)
 }
 
-// AssertOk asserts that a condition is true.
+// Ok asserts that a condition is true.
 //
 // If the condition is false, it calls panic() with an error.Err with the
 // code AssertFail and a message that includes the original condition.
@@ -73,7 +80,7 @@ func AssertErr(inner error, format string, args ...any) {
 //   - ok: The condition to assert.
 //   - format: The format string to use for the message.
 //   - args: The arguments to pass to the format string.
-func AssertOk(ok bool, format string, args ...any) {
+func Ok(ok bool, format string, args ...any) {
 	if ok {
 		return
 	}
@@ -81,11 +88,13 @@ func AssertOk(ok bool, format string, args ...any) {
 	msg := fmt.Sprintf(format, args...)
 	msg += " = false"
 
-	err := gerr.NewWithSeverity(gerr.FATAL, AssertFail, msg)
-	panic(err)
+	err := gers.NewWithSeverity(gers.FATAL, AssertFail, msg)
+	err.AddFrame("assert.Ok")
+
+	gers.Panic(os.Stderr, err)
 }
 
-// AssertNotOk asserts that a condition is false.
+// NotOk asserts that a condition is false.
 //
 // If the condition is true, it calls panic() with an error.Err with the
 // code AssertFail and a message that includes the original condition.
@@ -94,7 +103,7 @@ func AssertOk(ok bool, format string, args ...any) {
 //   - ok: The condition to assert.
 //   - format: The format string to use for the message.
 //   - args: The arguments to pass to the format string.
-func AssertNotOk(ok bool, format string, args ...any) {
+func NotOk(ok bool, format string, args ...any) {
 	if !ok {
 		return
 	}
@@ -102,11 +111,13 @@ func AssertNotOk(ok bool, format string, args ...any) {
 	msg := fmt.Sprintf(format, args...)
 	msg += " = true"
 
-	err := gerr.NewWithSeverity(gerr.FATAL, AssertFail, msg)
-	panic(err)
+	err := gers.NewWithSeverity(gers.FATAL, AssertFail, msg)
+	err.AddFrame("assert.NotOk")
+
+	gers.Panic(os.Stderr, err)
 }
 
-// AssertNotNil asserts that the given object is not nil.
+// NotNil asserts that the given object is not nil.
 //
 // If the object is nil, it calls panic() with an error.Err with the
 // code AssertFail and a message that includes the original object.
@@ -114,7 +125,7 @@ func AssertNotOk(ok bool, format string, args ...any) {
 // Parameters:
 //   - obj: The object to assert is not nil.
 //   - name: The name of the object to use for the error message.
-func AssertNotNil(obj any, name string) {
+func NotNil(obj any, name string) {
 	if obj != nil {
 		return
 	}
@@ -125,11 +136,13 @@ func AssertNotNil(obj any, name string) {
 
 	msg := name + " = nil"
 
-	err := gerr.NewWithSeverity(gerr.FATAL, AssertFail, msg)
-	panic(err)
+	err := gers.NewWithSeverity(gers.FATAL, AssertFail, msg)
+	err.AddFrame("assert.NotNil")
+
+	gers.Panic(os.Stderr, err)
 }
 
-// AssertNotZero asserts that the given object is not its zero value.
+// NotZero asserts that the given object is not its zero value.
 //
 // If the object is its zero value, it calls panic() with an error.Err with the
 // code AssertFail and a message that includes the original object and its
@@ -138,7 +151,7 @@ func AssertNotNil(obj any, name string) {
 // Parameters:
 //   - obj: The object to assert is not its zero value.
 //   - name: The name of the object to use for the error message.
-func AssertNotZero[T comparable](obj T, name string) {
+func NotZero[T comparable](obj T, name string) {
 	zero := *new(T)
 
 	if obj != zero {
@@ -151,11 +164,13 @@ func AssertNotZero[T comparable](obj T, name string) {
 
 	msg := fmt.Sprintf("%s = %v", name, obj)
 
-	err := gerr.NewWithSeverity(gerr.FATAL, AssertFail, msg)
-	panic(err)
+	err := gers.NewWithSeverity(gers.FATAL, AssertFail, msg)
+	err.AddFrame("assert.NotZero")
+
+	gers.Panic(os.Stderr, err)
 }
 
-// AssertType asserts that the given object is of type T.
+// Type asserts that the given object is of type T.
 //
 // If the object is not of type T, it calls panic() with an error.Err with the
 // code AssertFail and a message that includes the original object and its
@@ -165,7 +180,7 @@ func AssertNotZero[T comparable](obj T, name string) {
 //   - obj: The object to assert is of type T.
 //   - name: The name of the object to use for the error message.
 //   - allow_nil: Whether to allow the object to be nil.
-func AssertType[T any](obj any, name string, allow_nil bool) {
+func Type[T any](obj any, name string, allow_nil bool) {
 	if name == "" {
 		name = "object"
 	}
@@ -185,11 +200,13 @@ func AssertType[T any](obj any, name string, allow_nil bool) {
 		msg = fmt.Sprintf("%s = %T, expected %T", name, obj, zero)
 	}
 
-	err := gerr.NewWithSeverity(gerr.FATAL, AssertFail, msg)
-	panic(err)
+	err := gers.NewWithSeverity(gers.FATAL, AssertFail, msg)
+	err.AddFrame("assert.Type")
+
+	gers.Panic(os.Stderr, err)
 }
 
-// AssertConv asserts that the given object can be converted to type T.
+// Conv asserts that the given object can be converted to type T.
 //
 // If the object can be converted to type T, it returns the converted value.
 // Otherwise, it calls panic() with an error.Err with the code AssertFail and a
@@ -201,7 +218,7 @@ func AssertType[T any](obj any, name string, allow_nil bool) {
 //
 // Returns:
 //   - T: The converted value.
-func AssertConv[T any](obj any, name string) T {
+func Conv[T any](obj any, name string) T {
 	if name == "" {
 		name = "object"
 	}
@@ -221,11 +238,15 @@ func AssertConv[T any](obj any, name string) T {
 		msg = fmt.Sprintf("%s = %T, expected %T", name, obj, zero)
 	}
 
-	err := gerr.NewWithSeverity(gerr.FATAL, AssertFail, msg)
-	panic(err)
+	err := gers.NewWithSeverity(gers.FATAL, AssertFail, msg)
+	err.AddFrame("assert.Conv")
+
+	gers.Panic(os.Stderr, err)
+
+	panic("unreachable")
 }
 
-// AssertNew asserts a constructor returns a non-zero value.
+// New asserts a constructor returns a non-zero value.
 //
 // If the constructor returns a zero value, it calls panic() with an error.Err
 // with the code AssertFail and a message that includes the original error.
@@ -236,22 +257,23 @@ func AssertConv[T any](obj any, name string) T {
 //
 // Returns:
 //   - T: The non-zero value returned by the constructor.
-func AssertNew[T comparable](obj T, inner error) T {
+func New[T gers.Pointer](obj T, inner error) T {
+	var err *gers.Err
+
 	if inner != nil {
-		err := gerr.NewFromError(AssertFail, inner)
-		err.Severity = gerr.FATAL
+		err = gers.NewFromError(AssertFail, inner)
+		err.ChangeSeverity(gers.FATAL)
+	} else {
+		if !obj.IsNil() {
+			return obj
+		}
 
-		panic(err)
+		err = gers.NewWithSeverity(gers.FATAL, AssertFail, "object must not be the zero value")
 	}
 
-	zero := *new(T)
+	err.AddFrame("assert.New")
 
-	if obj == zero {
-		err := gerr.New(AssertFail, "object must not be zero value")
-		err.Severity = gerr.FATAL
+	gers.Panic(os.Stderr, err)
 
-		panic(err)
-	}
-
-	return obj
+	panic("unreachable")
 }

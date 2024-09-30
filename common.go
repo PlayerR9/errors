@@ -3,23 +3,9 @@ package errors
 import (
 	"errors"
 	"fmt"
-	"io"
 
-	gcers "github.com/PlayerR9/go-errors/error"
-	gerr "github.com/PlayerR9/go-errors/error"
+	"github.com/PlayerR9/go-errors/internal"
 )
-
-// DisplayError displays the complete error to the writer.
-//
-// Parameters:
-//   - w: The writer to write to.
-//   - err: The error to display.
-//
-// Returns:
-//   - error: The error that occurred while displaying the error.
-func DisplayError(w io.Writer, err error) error {
-	return gerr.DisplayError(w, err)
-}
 
 // Is is function that checks if an error is of type T.
 //
@@ -29,12 +15,12 @@ func DisplayError(w io.Writer, err error) error {
 //
 // Returns:
 //   - bool: true if the error is of type T, false otherwise (including if the error is nil).
-func Is[T gcers.ErrorCoder](err error, code T) bool {
+func Is[T ErrorCoder](err error, code T) bool {
 	if err == nil {
 		return false
 	}
 
-	var sub_err *gcers.Err
+	var sub_err *Err
 
 	ok := errors.As(err, &sub_err)
 	if !ok {
@@ -52,14 +38,14 @@ func Is[T gcers.ErrorCoder](err error, code T) bool {
 //   - code: The error code to check.
 //
 // Returns:
-//   - *gcers.Err: The error if it is of type T, nil otherwise.
+//   - *Err: The error if it is of type T, nil otherwise.
 //   - bool: true if the error is of type T, false otherwise (including if the error is nil).
-func As(err error) (*gcers.Err, bool) {
+func As(err error) (*Err, bool) {
 	if err == nil {
 		return nil, false
 	}
 
-	var sub_err *gcers.Err
+	var sub_err *Err
 
 	ok := errors.As(err, &sub_err)
 	if !ok {
@@ -76,14 +62,14 @@ func As(err error) (*gcers.Err, bool) {
 //   - code: The error code to check.
 //
 // Returns:
-//   - *gcers.Err: The error if it is of type T, nil otherwise.
+//   - *Err: The error if it is of type T, nil otherwise.
 //   - bool: true if the error is of type T, false otherwise (including if the error is nil).
-func AsWithCode[T gcers.ErrorCoder](err error, code T) (*gcers.Err, bool) {
+func AsWithCode[T ErrorCoder](err error, code T) (*Err, bool) {
 	if err == nil {
 		return nil, false
 	}
 
-	var sub_err *gcers.Err
+	var sub_err *Err
 
 	ok := errors.As(err, &sub_err)
 	if !ok {
@@ -107,21 +93,23 @@ func AsWithCode[T gcers.ErrorCoder](err error, code T) (*gcers.Err, bool) {
 // Returns:
 //   - T: The value of the context with the given key.
 //   - error: The error that occurred while getting the value.
-func Value[C gcers.ErrorCoder, T any](e *gcers.Err, key string) (T, error) {
+func Value[C ErrorCoder, T any](e *Err, key string) (T, error) {
+	zero := *new(T)
+
 	if e == nil || len(e.Context) == 0 {
-		return *new(T), NewErrNoSuchKey(key)
+		return zero, NewErrNoSuchKey(key)
 	}
 
 	x, ok := e.Context[key]
 	if !ok {
-		return *new(T), NewErrNoSuchKey(key)
+		return zero, NewErrNoSuchKey(key)
 	}
 
 	if x == nil {
 		err := NewErrNoSuchKey(key)
 		err.AddSuggestion("Found a key with the same name but has a nil value")
 
-		return *new(T), err
+		return zero, err
 	}
 
 	val, ok := x.(T)
@@ -129,7 +117,7 @@ func Value[C gcers.ErrorCoder, T any](e *gcers.Err, key string) (T, error) {
 		err := NewErrNoSuchKey(key)
 		err.AddSuggestion(fmt.Sprintf("Found a key with the same name but has a value of type %T", x))
 
-		return *new(T), err
+		return zero, err
 	}
 
 	return val, nil
@@ -180,3 +168,88 @@ func LimitErrorMsg(err error, limit int) error {
 
 	return err
 } */
+
+// Merge merges the inner Info into the outer Info.
+//
+// Parameters:
+//   - outer: The outer Info to merge.
+//   - inner: The inner Info to merge.
+//
+// Returns:
+//   - *Info: A pointer to the new Info. Never returns nil.
+//
+// Note:
+//   - The other Info is the inner info of the current Info and, as such,
+//     when conflicts occur, the outer Info takes precedence.
+func Merge(outer, inner *internal.Info) *internal.Info {
+	if inner == nil {
+		return outer.Copy()
+	}
+
+	suggestions := make([]string, 0, len(outer.Suggestions)+len(inner.Suggestions))
+	suggestions = append(suggestions, outer.Suggestions...)
+	suggestions = append(suggestions, inner.Suggestions...)
+
+	context := make(map[string]any)
+
+	for key, value := range inner.Context {
+		context[key] = value
+	}
+
+	for key, value := range outer.Context {
+		context[key] = value
+	}
+
+	stack_trace := make([]string, 0, len(outer.StackTrace)+len(inner.StackTrace))
+	stack_trace = append(stack_trace, outer.StackTrace...)
+	stack_trace = append(stack_trace, inner.StackTrace...)
+
+	return &internal.Info{
+		Suggestions: suggestions,
+		Timestamp:   outer.Timestamp,
+		Context:     context,
+		StackTrace:  stack_trace,
+		Inner:       MergeErrors(outer.Inner, inner.Inner),
+	}
+}
+
+func MergeErrors(outer, inner error) error {
+	if outer == nil {
+		return inner
+	} else if inner == nil {
+		return outer
+	}
+
+	o, ok1 := outer.(*Err)
+	i, ok2 := inner.(*Err)
+
+	if !ok1 && !ok2 {
+		return fmt.Errorf("%w: %w", outer, inner)
+	}
+
+	var err *Err
+
+	if ok1 {
+		err = &Err{
+			Severity: o.Severity,
+			Code:     o.Code,
+			Message:  o.Message,
+		}
+	} else {
+		err = &Err{
+			Severity: i.Severity,
+			Code:     i.Code,
+			Message:  i.Message,
+		}
+	}
+
+	err.Info = Merge(o.Info, i.Info)
+
+	if ok1 && !ok2 {
+		err.Info.Inner = MergeErrors(o.Info.Inner, i)
+	} else if !ok1 && ok2 {
+		err.Info.Inner = MergeErrors(o, i.Info.Inner)
+	}
+
+	return err
+}

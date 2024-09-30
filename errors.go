@@ -2,25 +2,16 @@ package errors
 
 import (
 	"strconv"
-
-	gerr "github.com/PlayerR9/go-errors/error"
 )
 
 // ErrorCode is the type of the error code.
 type ErrorCode int
 
 const (
-	// AssertFail occurs when an assertion fails.
-	AssertFail ErrorCode = iota
-
 	// BadParameter occurs when a parameter is invalid or is not
 	// valid for some reason. For example, a nil pointer when nil
 	// pointers are not allowed.
-	BadParameter
-
-	// FailFix occurs when a struct cannot be fixed or resolved
-	// due to an invalid internal state.
-	FailFix
+	BadParameter ErrorCode = iota
 
 	// InvalidUsage occurs when users call a function without
 	// proper setups or preconditions.
@@ -45,14 +36,12 @@ func (e ErrorCode) Int() int {
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrNilReceiver() *gerr.Err {
-	err := gerr.New(OperationFail, "receiver must not be nil")
+func NewErrNilReceiver() *Err {
+	err := New(OperationFail, "receiver must not be nil")
 	err.AddSuggestion("Did you forget to initialize the receiver?")
 
 	return err
 }
-
-////////////////////////////////////////////////////////////
 
 // NewErrInvalidParameter creates a new error.Err error.
 //
@@ -63,8 +52,8 @@ func NewErrNilReceiver() *gerr.Err {
 //   - *error.Err: The new error. Never returns nil.
 //
 // This function is mostly useless since it just wraps BadParameter.
-func NewErrInvalidParameter(message string) *gerr.Err {
-	err := gerr.New(BadParameter, message)
+func NewErrInvalidParameter(message string) *Err {
+	err := New(BadParameter, message)
 
 	return err
 }
@@ -76,10 +65,11 @@ func NewErrInvalidParameter(message string) *gerr.Err {
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrNilParameter(parameter string) *gerr.Err {
+func NewErrNilParameter(parameter string) *Err {
 	msg := "parameter (" + strconv.Quote(parameter) + ") must not be nil"
 
-	err := gerr.New(BadParameter, msg)
+	err := New(BadParameter, msg)
+	err.AddSuggestion("Maybe you forgot to initialize the parameter?")
 
 	return err
 }
@@ -92,13 +82,28 @@ func NewErrNilParameter(parameter string) *gerr.Err {
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrInvalidUsage(message string, usage string) *gerr.Err {
-	err := gerr.New(InvalidUsage, message)
+func NewErrInvalidUsage(message string, usage string) *Err {
+	err := New(InvalidUsage, message)
 
 	err.AddSuggestion(usage)
 
 	return err
 }
+
+// NewErrNoSuchKey creates a new error.Err error.
+//
+// Parameters:
+//   - key: The key that does not exist.
+//
+// Returns:
+//   - *error.Err: The new error. Never returns nil.
+func NewErrNoSuchKey(key string) *Err {
+	err := New(NoSuchKey, "key ("+strconv.Quote(key)+") does not exist")
+
+	return err
+}
+
+////////////////////////////////////////////////////////////
 
 // NewErrAt creates a new error.Err error.
 //
@@ -108,7 +113,7 @@ func NewErrInvalidUsage(message string, usage string) *gerr.Err {
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrAt(at string, reason error) *gerr.Err {
+func NewErrAt(at string, reason error) *Err {
 	var msg string
 
 	if at == "" {
@@ -117,7 +122,7 @@ func NewErrAt(at string, reason error) *gerr.Err {
 		msg = "an error occurred at " + at
 	}
 
-	err := gerr.New(OperationFail, msg)
+	err := New(OperationFail, msg)
 	err.SetInner(reason)
 
 	return err
@@ -131,7 +136,7 @@ func NewErrAt(at string, reason error) *gerr.Err {
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrAfter(before string, reason error) *gerr.Err {
+func NewErrAfter(before string, reason error) *Err {
 	var msg string
 
 	if before == "" {
@@ -140,7 +145,7 @@ func NewErrAfter(before string, reason error) *gerr.Err {
 		msg = "an error occurred after " + before
 	}
 
-	err := gerr.New(OperationFail, msg)
+	err := New(OperationFail, msg)
 	err.SetInner(reason)
 
 	return err
@@ -154,7 +159,7 @@ func NewErrAfter(before string, reason error) *gerr.Err {
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrBefore(after string, reason error) *gerr.Err {
+func NewErrBefore(after string, reason error) *Err {
 	var msg string
 
 	if after == "" {
@@ -163,32 +168,8 @@ func NewErrBefore(after string, reason error) *gerr.Err {
 		msg = "an error occurred before " + after
 	}
 
-	err := gerr.New(OperationFail, msg)
+	err := New(OperationFail, msg)
 	err.SetInner(reason)
 
 	return err
-}
-
-// NewErrNoSuchKey creates a new error.Err error.
-//
-// Parameters:
-//   - key: The key that does not exist.
-//
-// Returns:
-//   - *error.Err: The new error. Never returns nil.
-func NewErrNoSuchKey(key string) *gerr.Err {
-	err := gerr.New(NoSuchKey, "key ("+strconv.Quote(key)+") does not exist")
-
-	return err
-}
-
-// NewErrAssertFail creates a new error.Err error.
-//
-// Parameters:
-//   - msg: The message of the error.
-//
-// Returns:
-//   - *error.Err: The new error. Never returns nil.
-func NewErrAssertFail(msg string) *gerr.Err {
-	return gerr.NewWithSeverity(gerr.FATAL, AssertFail, msg)
 }
