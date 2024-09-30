@@ -34,11 +34,16 @@ func (e ErrorCode) Int() int {
 // NewErrNilReceiver creates a new error.Err error with the code
 // OperationFail.
 //
+// Parameters:
+//   - frame: The frame of the error.
+//
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrNilReceiver() *Err {
+func NewErrNilReceiver(frame string) *Err {
 	err := New(OperationFail, "receiver must not be nil")
 	err.AddSuggestion("Did you forget to initialize the receiver?")
+
+	err.AddFrame(frame)
 
 	return err
 }
@@ -46,14 +51,17 @@ func NewErrNilReceiver() *Err {
 // NewErrInvalidParameter creates a new error.Err error.
 //
 // Parameters:
+//   - frame: The frame of the error.
 //   - message: The message of the error.
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
 //
 // This function is mostly useless since it just wraps BadParameter.
-func NewErrInvalidParameter(message string) *Err {
+func NewErrInvalidParameter(frame, message string) *Err {
 	err := New(BadParameter, message)
+
+	err.AddFrame(frame)
 
 	return err
 }
@@ -61,11 +69,12 @@ func NewErrInvalidParameter(message string) *Err {
 // NewErrNilParameter creates a new error.Err error.
 //
 // Parameters:
+//   - frame: The frame of the error.
 //   - parameter: the name of the invalid parameter.
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrNilParameter(parameter string) *Err {
+func NewErrNilParameter(frame, parameter string) *Err {
 	msg := "parameter (" + strconv.Quote(parameter) + ") must not be nil"
 
 	err := New(BadParameter, msg)
@@ -77,15 +86,18 @@ func NewErrNilParameter(parameter string) *Err {
 // NewErrInvalidUsage creates a new error.Err error.
 //
 // Parameters:
+//   - frame: The frame of the error.
 //   - message: The message of the error.
 //   - usage: The usage/suggestion to solve the problem.
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrInvalidUsage(message string, usage string) *Err {
+func NewErrInvalidUsage(frame, message, usage string) *Err {
 	err := New(InvalidUsage, message)
 
 	err.AddSuggestion(usage)
+
+	err.AddFrame(frame)
 
 	return err
 }
@@ -93,11 +105,12 @@ func NewErrInvalidUsage(message string, usage string) *Err {
 // NewErrNoSuchKey creates a new error.Err error.
 //
 // Parameters:
+//   - frame: The frame of the error.
 //   - key: The key that does not exist.
 //
 // Returns:
 //   - *error.Err: The new error. Never returns nil.
-func NewErrNoSuchKey(key string) *Err {
+func NewErrNoSuchKey(frame, key string) *Err {
 	err := New(NoSuchKey, "key ("+strconv.Quote(key)+") does not exist")
 
 	return err

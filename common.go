@@ -97,16 +97,16 @@ func Value[C ErrorCoder, T any](e *Err, key string) (T, error) {
 	zero := *new(T)
 
 	if e == nil || len(e.Context) == 0 {
-		return zero, NewErrNoSuchKey(key)
+		return zero, NewErrNoSuchKey("Value()", key)
 	}
 
 	x, ok := e.Context[key]
 	if !ok {
-		return zero, NewErrNoSuchKey(key)
+		return zero, NewErrNoSuchKey("Value()", key)
 	}
 
 	if x == nil {
-		err := NewErrNoSuchKey(key)
+		err := NewErrNoSuchKey("Value()", key)
 		err.AddSuggestion("Found a key with the same name but has a nil value")
 
 		return zero, err
@@ -114,7 +114,7 @@ func Value[C ErrorCoder, T any](e *Err, key string) (T, error) {
 
 	val, ok := x.(T)
 	if !ok {
-		err := NewErrNoSuchKey(key)
+		err := NewErrNoSuchKey("Value()", key)
 		err.AddSuggestion(fmt.Sprintf("Found a key with the same name but has a value of type %T", x))
 
 		return zero, err

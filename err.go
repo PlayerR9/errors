@@ -149,7 +149,7 @@ func (e *Err) AddSuggestion(suggestion string) {
 // If prefix is empty, the call is used as the frame. Otherwise a dot is
 // added between the prefix and the call.
 func (e *Err) AddFrame(frame string) {
-	if e == nil {
+	if e == nil || frame == "" {
 		return
 	}
 
