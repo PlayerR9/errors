@@ -21,7 +21,11 @@ type Err struct {
 }
 
 // Error implements the error interface.
-func (e Err) Error() string {
+func (e *Err) Error() string {
+	if e == nil {
+		return ""
+	}
+
 	var msg string
 
 	if e.Message == "" {
