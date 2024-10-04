@@ -77,6 +77,95 @@ func NewWithSeverity[C ErrorCoder](severity SeverityLevel, code C, message strin
 	}
 }
 
+// ChangeSeverity changes the severity level of the error. Does
+// nothing if the receiver is nil.
+//
+// Parameters:
+//   - new_severity: The new severity level of the error.
+func (e *Err) ChangeSeverity(new_severity SeverityLevel) {
+	if e == nil {
+		return
+	}
+
+	e.Severity = new_severity
+}
+
+// AddSuggestion adds a suggestion to the error. Does nothing
+// if the receiver is nil.
+//
+// Parameters:
+//   - suggestion: The suggestion to add.
+func (e *Err) AddSuggestion(suggestion string) {
+	if e == nil {
+		return
+	}
+
+	e.Suggestions = append(e.Suggestions, suggestion)
+}
+
+// AddContext adds a context to the error. Does nothing if the
+// receiver is nil.
+//
+// Parameters:
+//   - key: The key of the context.
+//   - value: The value of the context.
+func (e *Err) AddContext(key string, value any) {
+	if e == nil {
+		return
+	}
+
+	if e.Context == nil {
+		e.Context = make(map[string]any)
+	}
+
+	e.Context[key] = value
+}
+
+// Value returns the value of the context with the given key.
+//
+// Parameters:
+//   - key: The key of the context.
+//
+// Returns:
+//   - any: The value of the context with the given key.
+//   - bool: true if the context contains the key, false otherwise.
+func (e Err) Value(key string) (any, bool) {
+	if len(e.Context) == 0 {
+		return nil, false
+	}
+
+	value, ok := e.Context[key]
+	return value, ok
+}
+
+// AddFrame prepends a frame to the stack trace. Does nothing
+// if the receiver is nil or the trace is empty.
+//
+// Parameters:
+//   - frame: The frame to add.
+//
+// If prefix is empty, the call is used as the frame. Otherwise a dot is
+// added between the prefix and the call.
+func (e *Err) AddFrame(frame string) {
+	if e == nil || frame == "" {
+		return
+	}
+
+	e.StackTrace = append(e.StackTrace, frame)
+}
+
+// SetInner sets the inner error. Does nothing if the receiver is nil.
+//
+// Parameters:
+//   - inner: The inner error.
+func (e *Err) SetInner(inner error) {
+	if e == nil {
+		return
+	}
+
+	e.Inner = inner
+}
+
 // NewFromError creates a new error from an error.
 //
 // Parameters:
@@ -118,91 +207,4 @@ func NewFromError[C ErrorCoder](code C, err error) *Err {
 	return outer
 }
 
-// ChangeSeverity changes the severity level of the error. Does
-// nothing if the receiver is nil.
-//
-// Parameters:
-//   - new_severity: The new severity level of the error.
-func (e *Err) ChangeSeverity(new_severity SeverityLevel) {
-	if e == nil {
-		return
-	}
-
-	e.Severity = new_severity
-}
-
-// AddSuggestion adds a suggestion to the error. Does nothing
-// if the receiver is nil.
-//
-// Parameters:
-//   - suggestion: The suggestion to add.
-func (e *Err) AddSuggestion(suggestion string) {
-	if e == nil {
-		return
-	}
-
-	e.Suggestions = append(e.Suggestions, suggestion)
-}
-
-// AddFrame prepends a frame to the stack trace. Does nothing
-// if the receiver is nil or the trace is empty.
-//
-// Parameters:
-//   - frame: The frame to add.
-//
-// If prefix is empty, the call is used as the frame. Otherwise a dot is
-// added between the prefix and the call.
-func (e *Err) AddFrame(frame string) {
-	if e == nil || frame == "" {
-		return
-	}
-
-	e.StackTrace = append(e.StackTrace, frame)
-}
-
-// SetInner sets the inner error. Does nothing if the receiver is nil.
-//
-// Parameters:
-//   - inner: The inner error.
-func (e *Err) SetInner(inner error) {
-	if e == nil {
-		return
-	}
-
-	e.Inner = inner
-}
-
-// AddContext adds a context to the error. Does nothing if the
-// receiver is nil.
-//
-// Parameters:
-//   - key: The key of the context.
-//   - value: The value of the context.
-func (e *Err) AddContext(key string, value any) {
-	if e == nil {
-		return
-	}
-
-	if e.Context == nil {
-		e.Context = make(map[string]any)
-	}
-
-	e.Context[key] = value
-}
-
-// Value returns the value of the context with the given key.
-//
-// Parameters:
-//   - key: The key of the context.
-//
-// Returns:
-//   - any: The value of the context with the given key.
-//   - bool: true if the context contains the key, false otherwise.
-func (e Err) Value(key string) (any, bool) {
-	if len(e.Context) == 0 {
-		return nil, false
-	}
-
-	value, ok := e.Context[key]
-	return value, ok
-}
+///////////////////////////////////////////////////////
