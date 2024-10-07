@@ -2,10 +2,7 @@ package errors
 
 import (
 	"bytes"
-	"fmt"
 	"io"
-	"slices"
-	"strings"
 
 	"github.com/PlayerR9/go-errors/internal"
 )
@@ -25,45 +22,45 @@ func display_info(info *internal.Info, w io.Writer) error {
 
 	var b bytes.Buffer
 
-	if !info.Timestamp.IsZero() {
-		fmt.Fprintf(&b, "Occurred at: %v\n", info.Timestamp)
-	}
+	// if !info.Timestamp.IsZero() {
+	// 	fmt.Fprintf(&b, "Occurred at: %v\n", info.Timestamp)
+	// }
 
-	if len(info.Suggestions) > 0 {
-		fmt.Fprintf(&b, "Suggestion: \n")
+	// if len(info.Suggestions) > 0 {
+	// 	fmt.Fprintf(&b, "Suggestion: \n")
 
-		for _, suggestion := range info.Suggestions {
-			fmt.Fprintf(&b, "- %s\n", suggestion)
-		}
-	}
+	// 	for _, suggestion := range info.Suggestions {
+	// 		fmt.Fprintf(&b, "- %s\n", suggestion)
+	// 	}
+	// }
 
-	if len(info.Context) > 0 {
-		b.WriteString("\nContext:\n")
+	// if len(info.Context) > 0 {
+	// 	b.WriteString("\nContext:\n")
 
-		for k, v := range info.Context {
-			fmt.Fprintf(&b, "- %s: %v\n", k, v)
-		}
-	}
+	// 	for k, v := range info.Context {
+	// 		fmt.Fprintf(&b, "- %s: %v\n", k, v)
+	// 	}
+	// }
 
-	if info.StackTrace != nil {
-		fmt.Fprintf(&b, "\nStack trace:\n")
+	// if info.StackTrace != nil {
+	// 	fmt.Fprintf(&b, "\nStack trace:\n")
 
-		elem := make([]string, len(info.StackTrace))
-		copy(elem, info.StackTrace)
+	// 	elem := make([]string, len(info.StackTrace))
+	// 	copy(elem, info.StackTrace)
 
-		slices.Reverse(elem)
+	// 	slices.Reverse(elem)
 
-		fmt.Fprintf(&b, "- %s\n", strings.Join(elem, " <- "))
-	}
+	// 	fmt.Fprintf(&b, "- %s\n", strings.Join(elem, " <- "))
+	// }
 
-	if info.Inner != nil {
-		fmt.Fprintf(&b, "\nCaused by:\n")
+	// if info.Inner != nil {
+	// 	fmt.Fprintf(&b, "\nCaused by:\n")
 
-		err := DisplayError(&b, info.Inner)
-		if err != nil {
-			return err
-		}
-	}
+	// 	err := DisplayError(&b, info.Inner)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 
 	data := b.Bytes()
 

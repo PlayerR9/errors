@@ -100,7 +100,7 @@ func (e *Err) AddSuggestion(suggestion string) {
 		return
 	}
 
-	e.Suggestions = append(e.Suggestions, suggestion)
+	// e.Suggestions = append(e.Suggestions, suggestion)
 }
 
 // AddContext adds a context to the error. Does nothing if the
@@ -114,13 +114,14 @@ func (e *Err) AddContext(key string, value any) {
 		return
 	}
 
-	if e.Context == nil {
-		e.Context = make(map[string]any)
-	}
+	// if e.Context == nil {
+	// 	e.Context = make(map[string]any)
+	// }
 
-	e.Context[key] = value
+	// e.Context[key] = value
 }
 
+/*
 // Value returns the value of the context with the given key.
 //
 // Parameters:
@@ -130,13 +131,13 @@ func (e *Err) AddContext(key string, value any) {
 //   - any: The value of the context with the given key.
 //   - bool: true if the context contains the key, false otherwise.
 func (e Err) Value(key string) (any, bool) {
-	if len(e.Context) == 0 {
-		return nil, false
-	}
+	// if len(e.Context) == 0 {
+	// 	return nil, false
+	// }
 
-	value, ok := e.Context[key]
-	return value, ok
-}
+	// value, ok := e.Context[key]
+	// return value, ok
+} */
 
 // AddFrame prepends a frame to the stack trace. Does nothing
 // if the receiver is nil or the trace is empty.
@@ -151,7 +152,7 @@ func (e *Err) AddFrame(frame string) {
 		return
 	}
 
-	e.StackTrace = append(e.StackTrace, frame)
+	// e.StackTrace = append(e.StackTrace, frame)
 }
 
 // SetInner sets the inner error. Does nothing if the receiver is nil.
@@ -163,7 +164,7 @@ func (e *Err) SetInner(inner error) {
 		return
 	}
 
-	e.Inner = inner
+	// e.Inner = inner
 }
 
 // NewFromError creates a new error from an error.

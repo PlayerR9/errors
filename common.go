@@ -84,6 +84,7 @@ func AsWithCode[T ErrorCoder](err error, code T) (*Err, bool) {
 	return sub_err, true
 }
 
+/*
 // Value is a function that returns the value of the context with the given key.
 //
 // Parameters:
@@ -94,34 +95,34 @@ func AsWithCode[T ErrorCoder](err error, code T) (*Err, bool) {
 //   - T: The value of the context with the given key.
 //   - error: The error that occurred while getting the value.
 func Value[C ErrorCoder, T any](e *Err, key string) (T, error) {
-	zero := *new(T)
+	// zero := *new(T)
 
-	if e == nil || len(e.Context) == 0 {
-		return zero, NewErrNoSuchKey("Value()", key)
-	}
+	// if e == nil || len(e.Context) == 0 {
+	// 	return zero, NewErrNoSuchKey("Value()", key)
+	// }
 
-	x, ok := e.Context[key]
-	if !ok {
-		return zero, NewErrNoSuchKey("Value()", key)
-	}
+	// x, ok := e.Context[key]
+	// if !ok {
+	// 	return zero, NewErrNoSuchKey("Value()", key)
+	// }
 
-	if x == nil {
-		err := NewErrNoSuchKey("Value()", key)
-		err.AddSuggestion("Found a key with the same name but has a nil value")
+	// if x == nil {
+	// 	err := NewErrNoSuchKey("Value()", key)
+	// 	err.AddSuggestion("Found a key with the same name but has a nil value")
 
-		return zero, err
-	}
+	// 	return zero, err
+	// }
 
-	val, ok := x.(T)
-	if !ok {
-		err := NewErrNoSuchKey("Value()", key)
-		err.AddSuggestion(fmt.Sprintf("Found a key with the same name but has a value of type %T", x))
+	// val, ok := x.(T)
+	// if !ok {
+	// 	err := NewErrNoSuchKey("Value()", key)
+	// 	err.AddSuggestion(fmt.Sprintf("Found a key with the same name but has a value of type %T", x))
 
-		return zero, err
-	}
+	// 	return zero, err
+	// }
 
-	return val, nil
-}
+	// return val, nil
+} */
 
 /*
 // LimitErrorMsg is a function that limits the number of errors in an error chain.
@@ -186,30 +187,30 @@ func Merge(outer, inner *internal.Info) *internal.Info {
 		return outer.Copy()
 	}
 
-	suggestions := make([]string, 0, len(outer.Suggestions)+len(inner.Suggestions))
-	suggestions = append(suggestions, outer.Suggestions...)
-	suggestions = append(suggestions, inner.Suggestions...)
+	// suggestions := make([]string, 0, len(outer.Suggestions)+len(inner.Suggestions))
+	// suggestions = append(suggestions, outer.Suggestions...)
+	// suggestions = append(suggestions, inner.Suggestions...)
 
-	context := make(map[string]any)
+	// context := make(map[string]any)
 
-	for key, value := range inner.Context {
-		context[key] = value
-	}
+	// for key, value := range inner.Context {
+	// 	context[key] = value
+	// }
 
-	for key, value := range outer.Context {
-		context[key] = value
-	}
+	// for key, value := range outer.Context {
+	// 	context[key] = value
+	// }
 
-	stack_trace := make([]string, 0, len(outer.StackTrace)+len(inner.StackTrace))
-	stack_trace = append(stack_trace, outer.StackTrace...)
-	stack_trace = append(stack_trace, inner.StackTrace...)
+	// stack_trace := make([]string, 0, len(outer.StackTrace)+len(inner.StackTrace))
+	// stack_trace = append(stack_trace, outer.StackTrace...)
+	// stack_trace = append(stack_trace, inner.StackTrace...)
 
 	return &internal.Info{
-		Suggestions: suggestions,
-		Timestamp:   outer.Timestamp,
-		Context:     context,
-		StackTrace:  stack_trace,
-		Inner:       MergeErrors(outer.Inner, inner.Inner),
+		// Suggestions: suggestions,
+		// Timestamp:   outer.Timestamp,
+		// Context:    context,
+		// StackTrace: stack_trace,
+		// Inner: MergeErrors(outer.Inner, inner.Inner),
 	}
 }
 
@@ -245,11 +246,11 @@ func MergeErrors(outer, inner error) error {
 
 	err.Info = Merge(o.Info, i.Info)
 
-	if ok1 && !ok2 {
-		err.Info.Inner = MergeErrors(o.Info.Inner, i)
-	} else if !ok1 && ok2 {
-		err.Info.Inner = MergeErrors(o, i.Info.Inner)
-	}
+	// if ok1 && !ok2 {
+	// 	err.Info.Inner = MergeErrors(o.Info.Inner, i)
+	// } else if !ok1 && ok2 {
+	// 	err.Info.Inner = MergeErrors(o, i.Info.Inner)
+	// }
 
 	return err
 }
